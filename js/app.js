@@ -135,7 +135,7 @@ async function profilePage(){
   event.preventDefault();clearErrors(form);
   const name=$('profileName').value.trim(),email=$('profileEmail').value.trim();
   if(name.length<2){fieldError($('profileName'),'Name must contain at least 2 characters');return}
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){fieldError($('profileEmail'),'Enter a valid email address');return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){fieldError($('profileEmail'),'Enter a valid email address');return}
   const button=form.querySelector('[type=submit]');button.disabled=true;button.textContent='Saving…';
   try{const result=await api('/auth/me',{method:'PUT',body:JSON.stringify({name,email})});const updated=result.user||result;$('profileAvatar').textContent=(updated.name||name).charAt(0).toUpperCase();showToast('Profile updated successfully');}
   catch(error){showToast(error.message,'error')}

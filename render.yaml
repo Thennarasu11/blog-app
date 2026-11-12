@@ -18,8 +18,7 @@ services:
       - key: COOKIE_SAME_SITE
         value: lax
 
-  - type: web
-    name: blogverse-frontend
-    runtime: static
+staticSites:
+  - name: blogverse-frontend
     buildCommand: echo "BlogVerse static frontend ready"
     staticPublishPath: .
