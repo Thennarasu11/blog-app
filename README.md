@@ -109,3 +109,20 @@ The BlogVerse application supports complete blog CRUD workflows:
 | DELETE | `/api/blogs/:id` | Author only | Delete |
 
 The MongoDB API requires a configured `backend/.env` and running MongoDB service. Verify create, read, update and delete with an authenticated test account before submitting.
+
+
+## Module 05 — Authentication & Dashboard (Day 17–Day 20)
+- JWT authentication is issued in an HttpOnly cookie on login and checked by the `protect` middleware for private API routes.
+- The dashboard and blog editor check `GET /api/auth/me` before rendering private content and redirect unauthenticated visitors to the login page.
+- The dashboard loads only the current user's posts from `GET /api/blogs/mine`; server-side author ownership checks also protect edit and delete operations.
+- The new `profile.html` page displays the signed-in user's name, email and account creation month, and allows the user to update their name and email through `PUT /api/auth/me`.
+- Logout is available from the navigation, dashboard sidebar and profile page. It calls `POST /api/auth/logout` to clear the HttpOnly cookie.
+
+### Profile API
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/auth/me` | Authenticated | Read current profile |
+| PUT | `/api/auth/me` | Authenticated | Update name and email |
+| POST | `/api/auth/logout` | Authenticated session | Clear login cookie |
+
+Private dashboard data is never read from browser localStorage. The frontend relies on the server-validated session cookie and backend author filtering.

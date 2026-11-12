@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - BlogVerse</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand"><div class="logo-icon">✍</div>BlogVerse</a>
+      <button class="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+      <div class="nav-menu">
+        <div class="nav-links"><a href="index.html">Home</a><a href="dashboard.html">Dashboard</a><a href="profile.html" class="active">My Profile</a></div>
+        <div class="nav-auth"></div>
+      </div>
+    </div>
+  </nav>
+  <main class="profile-wrapper">
+    <section class="profile-card">
+      <a class="detail-back" href="dashboard.html">← Back to dashboard</a>
+      <div class="profile-heading">
+        <div class="profile-avatar" id="profileAvatar">U</div>
+        <div><span class="detail-category">ACCOUNT SETTINGS</span><h1>My Profile</h1><p id="profileJoined">Your BlogVerse account</p></div>
+      </div>
+      <form id="profileForm" novalidate>
+        <div class="form-group"><label for="profileName">Full name</label><input id="profileName" type="text" minlength="2" maxlength="80" autocomplete="name" required></div>
+        <div class="form-group"><label for="profileEmail">Email address</label><input id="profileEmail" type="email" autocomplete="email" required></div>
+        <div class="profile-note">Your account details are private. Your password is never displayed or returned by the API.</div>
+        <div class="form-actions"><a href="dashboard.html" class="btn btn-secondary">Cancel</a><button type="submit" class="btn btn-primary">Save Changes</button></div>
+      </form>
+      <div class="profile-logout"><div><strong>Sign out</strong><p>End your current BlogVerse session on this browser.</p></div><button id="profileLogout" type="button" class="btn btn-secondary">Log Out</button></div>
+    </section>
+  </main>
+  <script src="js/app.js"></script>
+  <script>document.addEventListener('DOMContentLoaded',()=>document.getElementById('profileLogout')?.addEventListener('click',handleLogout));</script>
+</body>
+</html>

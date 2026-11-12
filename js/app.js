@@ -29,9 +29,9 @@ async function updateNav(user) {
   nav.innerHTML=user
     ? '<a href="dashboard.html" class="btn btn-sm btn-primary">Dashboard</a><button class="btn btn-sm btn-secondary" id="logoutBtn">Logout</button>'
     : '<a href="login.html" class="btn btn-sm btn-secondary">Log In</a><a href="register.html" class="btn btn-sm btn-primary">Sign Up</a>';
-  $('logoutBtn')?.addEventListener('click',async()=>{try{await api('/auth/logout',{method:'POST'});}catch{}location.href='index.html';});
+  $('logoutBtn')?.addEventListener('click',handleLogout);
 }
-function initMobileNav(){
+async function handleLogout(){try{await api('/auth/logout',{method:'POST'});}catch(error){console.warn('Logout request failed:',error.message)}finally{location.replace('index.html')}}\nfunction initMobileNav(){
  const h=document.querySelector('.hamburger'),m=document.querySelector('.nav-menu');
  if(h&&m)h.addEventListener('click',()=>{m.classList.toggle('show');h.classList.toggle('active')});
 }
@@ -94,7 +94,7 @@ async function dashboard(){
  const table=$('postsTable');if(!table)return;
  const user=await currentUser();if(!user){location.href='login.html';return}
  $('welcomeMsg').textContent='Welcome back, '+user.name.split(' ')[0]+'! 👋';
- $('sidebarUser').innerHTML='<div class="avatar-lg">'+esc(user.name[0].toUpperCase())+'</div><div class="user-info"><h4>'+esc(user.name)+'</h4><span>'+esc(user.email)+'</span></div>';
+ $('sidebarUser').innerHTML='<div class="avatar-lg">'+esc(user.name[0].toUpperCase())+'</div><div class="user-info"><h4>'+esc(user.name)+'</h4><span>'+esc(user.email)+'</span></div>';\n $('totalViews').textContent='—';
  table.innerHTML='<tr><td colspan="5">Loading your posts…</td></tr>';
  try{
   const data=await api('/blogs/mine');const posts=Array.isArray(data)?data:(data.blogs||[]);
@@ -121,7 +121,27 @@ async function createBlog(){
  window.saveDraft=()=>save('draft');
 }
 
-async function blogDetails(){
+
+async function profilePage(){
+ const form=$('profileForm');if(!form)return;
+ const user=await currentUser();
+ if(!user){location.replace('login.html');return}
+ $('profileName').value=user.name||'';
+ $('profileEmail').value=user.email||'';
+ $('profileAvatar').textContent=(user.name||'U').charAt(0).toUpperCase();
+ $('profileJoined').textContent=user.createdAt?'Member since '+new Date(user.createdAt).toLocaleDateString(undefined,{month:'long',year:'numeric'}):'BlogVerse member';
+ form.addEventListener('submit',async event=>{
+  event.preventDefault();clearErrors(form);
+  const name=$('profileName').value.trim(),email=$('profileEmail').value.trim();
+  if(name.length<2){fieldError($('profileName'),'Name must contain at least 2 characters');return}
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){fieldError($('profileEmail'),'Enter a valid email address');return}
+  const button=form.querySelector('[type=submit]');button.disabled=true;button.textContent='Saving…';
+  try{const result=await api('/auth/me',{method:'PUT',body:JSON.stringify({name,email})});const updated=result.user||result;$('profileAvatar').textContent=(updated.name||name).charAt(0).toUpperCase();showToast('Profile updated successfully');}
+  catch(error){showToast(error.message,'error')}
+  finally{button.disabled=false;button.textContent='Save Changes'}
+ });
+}
+\nasync function blogDetails(){
  const root=$('blogDetails');if(!root)return;
  const id=new URLSearchParams(location.search).get('id');
  if(!id){root.innerHTML='<div class="create-blog-card"><h2>Blog not found</h2><p>No blog post was selected.</p><a class="btn btn-primary" href="index.html#featured">Back to blogs</a></div>';return}
@@ -138,6 +158,6 @@ async function blogDetails(){
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
- initMobileNav();const user=await currentUser();await updateNav(user);
- registerForm();loginForm();loadHome();dashboard();createBlog();blogDetails();
+ initMobileNav();const user=await currentUser();await updateNav(user);$('sidebarLogout')?.addEventListener('click',event=>{event.preventDefault();handleLogout()});
+ registerForm();loginForm();loadHome();dashboard();createBlog();blogDetails();profilePage();
 });

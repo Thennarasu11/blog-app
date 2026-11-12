@@ -5,3 +5,12 @@ exports.register=asyncHandler(async(req,res)=>{const {name,email,password}=req.b
 exports.login=asyncHandler(async(req,res)=>{const email=String(req.body.email||'').toLowerCase().trim();const user=await User.findOne({email}).select('+password');if(!user||!(await user.comparePassword(req.body.password||'')))return res.status(401).json({success:false,message:'Invalid email or password'});issue(user,res);res.json({success:true,message:'Login successful',data:{user:user.toSafeJSON()}})});
 exports.me=asyncHandler(async(req,res)=>res.json({success:true,data:{id:String(req.user._id),_id:String(req.user._id),name:req.user.name,email:req.user.email}}));
 exports.logout=(req,res)=>{res.clearCookie('token',{...cookieOptions(),maxAge:undefined});res.json({success:true,message:'Logged out'})};
+
+exports.updateMe=asyncHandler(async(req,res)=>{
+ const name=String(req.body.name||'').trim();
+ const email=String(req.body.email||'').trim().toLowerCase();
+ if(name)req.user.name=name;
+ if(email)req.user.email=email;
+ await req.user.save();
+ res.json({success:true,message:'Profile updated successfully',data:{user:req.user.toSafeJSON()}});
+});
