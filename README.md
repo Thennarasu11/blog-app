@@ -74,3 +74,16 @@ css/style.css
 js/app.js
 index.html, login.html, register.html, dashboard.html, create-blog.html
 ```
+
+
+## Module 03 — Database Integration (Day 9–Day 12)
+The application now uses MongoDB through Mongoose for persistent users and blog posts. User passwords are hashed with bcrypt before storage. Authentication uses JWT in an HttpOnly cookie. The homepage retrieves published blog posts from `GET /api/blogs`; the authenticated dashboard retrieves the current user's posts from `GET /api/blogs/mine`. Selecting a post opens `blog-details.html?id=<MongoDB ObjectId>`, which retrieves that individual post from `GET /api/blogs/:id` and displays its title, category, author, date, tags and full content.
+
+### Database setup
+- Start MongoDB locally or create a MongoDB Atlas database.
+- Copy `backend/.env.example` to `backend/.env` and set `MONGODB_URI` and a strong `JWT_SECRET`.
+- Run `npm install` inside `backend/`, then `npm run dev`.
+- Serve the frontend root with Live Server at the configured `FRONTEND_URL`.
+- Verify `GET http://127.0.0.1:5000/api/health`, register an account, create a blog, confirm it appears on the homepage, and open its Read full story link.
+
+The repository contains the integration code and setup instructions; a successful live database test requires the developer's MongoDB connection and local runtime.

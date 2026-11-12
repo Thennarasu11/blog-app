@@ -39,9 +39,9 @@ async function loadHome(){
  const grid=$('blogGrid');if(!grid)return;
  grid.innerHTML='<p>Loading latest posts…</p>';
  try{
-  const data=await api('/blogs/mine');const posts=(Array.isArray(data)?data:data.blogs||[]).filter(p=>p.status!=='draft');
+  const data=await api('/blogs');const posts=Array.isArray(data)?data:(data.blogs||[]);
   const emojis=['📖','✨','💡','🔥','🎯','⚡'];
-  grid.innerHTML=posts.length?posts.map((p,i)=>'<article class="blog-card fade-in-up"><div class="blog-card-img">'+emojis[i%emojis.length]+'<span class="category-badge">'+esc(p.category||'General')+'</span></div><div class="blog-card-body"><h3>'+esc(p.title)+'</h3><p>'+esc(p.content)+'</p><div class="blog-card-meta"><span>'+esc(p.author?.name||'Writer')+'</span><span>'+new Date(p.createdAt).toLocaleDateString()+'</span></div></div></article>').join(''):'<p>No published blogs yet. Be the first to write one!</p>';
+  grid.innerHTML=posts.length?posts.map((p,i)=>'<article class="blog-card fade-in-up"><a class="blog-card-img" href="blog-details.html?id='+encodeURIComponent(p._id)+'" aria-label="Read '+esc(p.title)+'">'+emojis[i%emojis.length]+'<span class="category-badge">'+esc(p.category||'General')+'</span></a><div class="blog-card-body"><h3><a href="blog-details.html?id='+encodeURIComponent(p._id)+'">'+esc(p.title)+'</a></h3><p>'+esc(p.content)+'</p><div class="blog-card-meta"><span>'+esc(p.author?.name||'Writer')+'</span><span>'+new Date(p.createdAt).toLocaleDateString()+'</span></div><a class="btn btn-sm btn-secondary" href="blog-details.html?id='+encodeURIComponent(p._id)+'">Read full story →</a></div></article>').join(''):'<p>No published blogs yet. Be the first to write one!</p>';
  }catch(e){grid.innerHTML='<p>Unable to load blogs. Please try again later.</p>';showToast(e.message,'error');}
 }
 async function registerForm(){
@@ -80,7 +80,7 @@ async function dashboard(){
  $('sidebarUser').innerHTML='<div class="avatar-lg">'+esc(user.name[0].toUpperCase())+'</div><div class="user-info"><h4>'+esc(user.name)+'</h4><span>'+esc(user.email)+'</span></div>';
  table.innerHTML='<tr><td colspan="5">Loading your posts…</td></tr>';
  try{
-  const data=await api('/blogs');const posts=(Array.isArray(data)?data:data.blogs||[]).filter(p=>p.author?._id===user.id||p.author?._id===user._id);
+  const data=await api('/blogs/mine');const posts=Array.isArray(data)?data:(data.blogs||[]);
   $('totalPosts').textContent=posts.length;$('publishedPosts').textContent=posts.filter(p=>p.status!=='draft').length;$('draftPosts').textContent=posts.filter(p=>p.status==='draft').length;
   $('totalViews').textContent='—';
   table.innerHTML=posts.length?posts.map(p=>'<tr><td><strong>'+esc(p.title)+'</strong></td><td>'+esc(p.category||'General')+'</td><td><span class="status-badge '+(p.status==='draft'?'draft':'published')+'">'+(p.status==='draft'?'Draft':'Published')+'</span></td><td>'+new Date(p.createdAt).toLocaleDateString()+'</td><td><div class="action-btns"><a class="action-btn" title="Edit" href="create-blog.html?id='+encodeURIComponent(p._id)+'">✏️</a><button class="action-btn delete" data-delete="'+esc(p._id)+'" title="Delete">🗑️</button></div></td></tr>').join(''):'<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--gray)">No posts yet. <a href="create-blog.html">Create your first post!</a></td></tr>';
@@ -103,7 +103,24 @@ async function createBlog(){
  form.addEventListener('submit',e=>{e.preventDefault();save('published')});
  window.saveDraft=()=>save('draft');
 }
+
+async function blogDetails(){
+ const root=$('blogDetails');if(!root)return;
+ const id=new URLSearchParams(location.search).get('id');
+ if(!id){root.innerHTML='<div class="create-blog-card"><h2>Blog not found</h2><p>No blog post was selected.</p><a class="btn btn-primary" href="index.html#featured">Back to blogs</a></div>';return}
+ root.innerHTML='<div class="create-blog-card"><p>Loading blog post…</p></div>';
+ try{
+  const post=await api('/blogs/'+encodeURIComponent(id));
+  const author=post.author?.name||'BlogVerse Writer';
+  const date=post.createdAt?new Date(post.createdAt).toLocaleDateString(undefined,{year:'long',month:'long',day:'numeric'}):'';
+  const paragraphs=String(post.content||'').split(/\n\s*\n/).map(part=>'<p>'+esc(part).replace(/\n/g,'<br>')+'</p>').join('');
+  const tags=(post.tags||[]).map(tag=>'<span class="tag">'+esc(tag)+'</span>').join('');
+  root.innerHTML='<article class="detail-card fade-in-up"><a class="detail-back" href="index.html#featured">← Back to all blogs</a><div class="detail-cover"><span>'+esc(post.category||'General')+'</span><strong>✍</strong></div><div class="detail-content"><span class="detail-category">'+esc(post.category||'General')+'</span><h1>'+esc(post.title)+'</h1><div class="detail-meta"><span>By '+esc(author)+'</span><span>'+esc(date)+'</span></div><div class="detail-tags">'+tags+'</div><div class="detail-body">'+paragraphs+'</div><a class="btn btn-primary" href="index.html#featured">Explore more blogs</a></div></article>';
+  document.title=post.title+' - BlogVerse';
+ }catch(error){root.innerHTML='<div class="create-blog-card"><h2>Unable to load this blog</h2><p>'+esc(error.message)+'</p><a class="btn btn-primary" href="index.html#featured">Back to blogs</a></div>'}
+}
+
 document.addEventListener('DOMContentLoaded',async()=>{
  initMobileNav();const user=await currentUser();await updateNav(user);
- registerForm();loginForm();loadHome();dashboard();createBlog();
+ registerForm();loginForm();loadHome();dashboard();createBlog();blogDetails();
 });
