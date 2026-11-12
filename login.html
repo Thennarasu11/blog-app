@@ -80,57 +80,6 @@
   </div>
 
   <script src="js/app.js"></script>
-  <script>
-    const form = document.getElementById('loginForm');
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      let valid = true;
-
-      const email = document.getElementById('email');
-      const password = document.getElementById('password');
-
-      // Clear previous errors
-      clearFieldError(email);
-      clearFieldError(password);
-
-      // Validate email
-      if (!email.value.trim()) {
-        showFieldError(email, 'Email is required');
-        valid = false;
-      } else if (!validateEmail(email.value)) {
-        showFieldError(email, 'Please enter a valid email');
-        valid = false;
-      }
-
-      // Validate password
-      if (!password.value) {
-        showFieldError(password, 'Password is required');
-        valid = false;
-      }
-
-      if (!valid) return;
-
-      // Check credentials
-      const user = DB.findUser(email.value);
-      if (!user || user.password !== password.value) {
-        showToast('Invalid email or password', 'error');
-        return;
-      }
-
-      // Login success
-      DB.setCurrentUser(user);
-      showToast('Welcome back, ' + user.name + '!', 'success');
-
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1000);
-    });
-
-    // Clear errors on input
-    document.querySelectorAll('input').forEach(input => {
-      input.addEventListener('input', () => clearFieldError(input));
-    });
-  </script>
+  
 </body>
 </html>

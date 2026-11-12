@@ -1,236 +1,109 @@
-// ===== App.js - Shared JavaScript =====
-
-// Mobile Navigation Toggle
-function initMobileNav() {
-  const hamburger = document.querySelector('.hamburger');
-  const navMenu = document.querySelector('.nav-menu');
-
-  if (hamburger && navMenu) {
-    hamburger.addEventListener('click', () => {
-      navMenu.classList.toggle('show');
-      hamburger.classList.toggle('active');
-    });
-
-    // Close menu on link click
-    document.querySelectorAll('.nav-links a').forEach(link => {
-      link.addEventListener('click', () => {
-        navMenu.classList.remove('show');
-        hamburger.classList.remove('active');
-      });
-    });
-  }
-}
-
-// Toast Notification System
-function showToast(message, type = 'success') {
-  // Remove existing toast
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-
-  // Trigger animation
-  requestAnimationFrame(() => {
-    toast.classList.add('show');
+/* BlogVerse frontend API integration */
+const API_BASE = window.API_BASE_URL || 'http://localhost:5000/api';
+const api = async (path, options={}) => {
+  const response = await fetch(API_BASE + path, {
+    ...options, credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
   });
-
-  // Auto dismiss
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-// Form Validation Utilities
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function validatePassword(password) {
-  return password.length >= 6;
-}
-
-function showFieldError(input, message) {
-  clearFieldError(input);
-  input.style.borderColor = '#d63031';
-  const error = document.createElement('small');
-  error.className = 'field-error';
-  error.style.color = '#d63031';
-  error.style.fontSize = '0.8rem';
-  error.style.marginTop = '4px';
-  error.style.display = 'block';
-  error.textContent = message;
-  input.parentElement.appendChild(error);
-}
-
-function clearFieldError(input) {
-  input.style.borderColor = '';
-  const error = input.parentElement.querySelector('.field-error');
-  if (error) error.remove();
-}
-
-// Local Storage Helpers (simulating backend)
-const DB = {
-  getUsers() {
-    return JSON.parse(localStorage.getItem('blog_users') || '[]');
-  },
-
-  saveUser(user) {
-    const users = this.getUsers();
-    users.push(user);
-    localStorage.setItem('blog_users', JSON.stringify(users));
-  },
-
-  findUser(email) {
-    return this.getUsers().find(u => u.email === email);
-  },
-
-  setCurrentUser(user) {
-    localStorage.setItem('blog_current_user', JSON.stringify(user));
-  },
-
-  getCurrentUser() {
-    return JSON.parse(localStorage.getItem('blog_current_user') || 'null');
-  },
-
-  logout() {
-    localStorage.removeItem('blog_current_user');
-  },
-
-  getPosts() {
-    return JSON.parse(localStorage.getItem('blog_posts') || '[]');
-  },
-
-  savePost(post) {
-    const posts = this.getPosts();
-    post.id = Date.now();
-    post.createdAt = new Date().toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric'
-    });
-    posts.unshift(post);
-    localStorage.setItem('blog_posts', JSON.stringify(posts));
-    return post;
-  },
-
-  deletePost(id) {
-    const posts = this.getPosts().filter(p => p.id !== id);
-    localStorage.setItem('blog_posts', JSON.stringify(posts));
-  },
-
-  getUserPosts(email) {
-    return this.getPosts().filter(p => p.authorEmail === email);
-  }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.message || 'Request failed. Please try again.');
+  return payload.data ?? payload;
 };
-
-// Seed demo data if empty
-function seedDemoData() {
-  if (DB.getPosts().length === 0) {
-    const demoPosts = [
-      {
-        id: 1,
-        title: 'Getting Started with HTML5',
-        content: 'HTML5 is the latest version of Hypertext Markup Language, the code that describes web pages. It introduces new elements, attributes, and behaviors that allow for more diverse and powerful websites.',
-        category: 'Technology',
-        tags: ['HTML', 'Web Dev', 'Beginner'],
-        author: 'John Doe',
-        authorEmail: 'demo@blog.com',
-        status: 'published',
-        createdAt: 'Nov 10, 2026'
-      },
-      {
-        id: 2,
-        title: 'CSS Flexbox: A Complete Guide',
-        content: 'Flexbox is a one-dimensional layout method for laying out items in rows or columns. Items flex to fill additional space and shrink to fit into smaller spaces. This guide covers everything you need to know.',
-        category: 'Design',
-        tags: ['CSS', 'Flexbox', 'Layout'],
-        author: 'Jane Smith',
-        authorEmail: 'demo@blog.com',
-        status: 'published',
-        createdAt: 'Nov 9, 2026'
-      },
-      {
-        id: 3,
-        title: 'JavaScript ES6 Features',
-        content: 'ES6, also known as ECMAScript 2015, introduced many changes to JavaScript. Let us explore some of the most important features including arrow functions, template literals, destructuring, and more.',
-        category: 'Technology',
-        tags: ['JavaScript', 'ES6', 'Programming'],
-        author: 'Alex Chen',
-        authorEmail: 'demo@blog.com',
-        status: 'draft',
-        createdAt: 'Nov 8, 2026'
-      },
-      {
-        id: 4,
-        title: 'Responsive Web Design Principles',
-        content: 'Responsive web design is about creating web pages that look good on all devices. It uses CSS and HTML to resize, hide, shrink, enlarge, or move the content to make it look great on any screen.',
-        category: 'Design',
-        tags: ['Responsive', 'Mobile', 'CSS'],
-        author: 'Sara Kim',
-        authorEmail: 'demo@blog.com',
-        status: 'published',
-        createdAt: 'Nov 7, 2026'
-      },
-      {
-        id: 5,
-        title: 'Building Your First Web Application',
-        content: 'In this tutorial, we will walk through building a complete web application from scratch. We will cover project setup, creating the frontend, and adding interactivity with JavaScript.',
-        category: 'Tutorial',
-        tags: ['Web App', 'Full Stack', 'Project'],
-        author: 'Mike Wilson',
-        authorEmail: 'demo@blog.com',
-        status: 'published',
-        createdAt: 'Nov 6, 2026'
-      },
-      {
-        id: 6,
-        title: 'Understanding Git Version Control',
-        content: 'Git is a distributed version control system that tracks changes in any set of computer files. It is designed for coordinating work among programmers, but it can be used to track changes in any set of files.',
-        category: 'Technology',
-        tags: ['Git', 'Version Control', 'DevOps'],
-        author: 'Lisa Park',
-        authorEmail: 'demo@blog.com',
-        status: 'draft',
-        createdAt: 'Nov 5, 2026'
-      }
-    ];
-    localStorage.setItem('blog_posts', JSON.stringify(demoPosts));
-  }
+const $ = (id) => document.getElementById(id);
+const esc = (value='') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function showToast(message, type='success') {
+  document.querySelector('.toast')?.remove();
+  const node=document.createElement('div'); node.className='toast '+type; node.textContent=message;
+  document.body.appendChild(node); requestAnimationFrame(()=>node.classList.add('show'));
+  setTimeout(()=>{node.classList.remove('show');setTimeout(()=>node.remove(),300)},3000);
 }
-
-// Update navbar based on auth state
-function updateNavAuth() {
-  const authContainer = document.querySelector('.nav-auth');
-  if (!authContainer) return;
-
-  const user = DB.getCurrentUser();
-  if (user) {
-    authContainer.innerHTML = `
-      <span style="color: var(--gray); font-weight: 500;">Hi, ${user.name.split(' ')[0]}</span>
-      <a href="dashboard.html" class="btn btn-sm btn-primary">Dashboard</a>
-      <button class="btn btn-sm btn-secondary" onclick="handleLogout()">Logout</button>
-    `;
-  } else {
-    authContainer.innerHTML = `
-      <a href="login.html" class="btn btn-sm btn-secondary">Log In</a>
-      <a href="register.html" class="btn btn-sm btn-primary">Sign Up</a>
-    `;
-  }
+function fieldError(input,message) {
+  input.parentElement.querySelector('.field-error')?.remove();
+  input.style.borderColor='#d63031';
+  const e=document.createElement('small');e.className='field-error';e.style.cssText='display:block;color:#d63031;font-size:.8rem;margin-top:4px';e.textContent=message;input.parentElement.appendChild(e);
 }
-
-function handleLogout() {
-  DB.logout();
-  showToast('Logged out successfully!', 'info');
-  setTimeout(() => {
-    window.location.href = 'index.html';
-  }, 1000);
+function clearErrors(form) { form?.querySelectorAll('.field-error').forEach(e=>e.remove());form?.querySelectorAll('input,textarea').forEach(e=>e.style.borderColor=''); }
+async function currentUser() { try { return await api('/auth/me'); } catch { return null; } }
+async function updateNav(user) {
+  const nav=document.querySelector('.nav-auth'); if(!nav)return;
+  nav.innerHTML=user
+    ? '<a href="dashboard.html" class="btn btn-sm btn-primary">Dashboard</a><button class="btn btn-sm btn-secondary" id="logoutBtn">Logout</button>'
+    : '<a href="login.html" class="btn btn-sm btn-secondary">Log In</a><a href="register.html" class="btn btn-sm btn-primary">Sign Up</a>';
+  $('logoutBtn')?.addEventListener('click',async()=>{try{await api('/auth/logout',{method:'POST'});}catch{}location.href='index.html';});
 }
-
-// Initialize common features
-document.addEventListener('DOMContentLoaded', () => {
-  initMobileNav();
-  seedDemoData();
-  updateNavAuth();
+function initMobileNav(){
+ const h=document.querySelector('.hamburger'),m=document.querySelector('.nav-menu');
+ if(h&&m)h.addEventListener('click',()=>{m.classList.toggle('show');h.classList.toggle('active')});
+}
+async function loadHome(){
+ const grid=$('blogGrid');if(!grid)return;
+ grid.innerHTML='<p>Loading latest posts…</p>';
+ try{
+  const data=await api('/blogs');const posts=(Array.isArray(data)?data:data.blogs||[]).filter(p=>p.status!=='draft');
+  const emojis=['📖','✨','💡','🔥','🎯','⚡'];
+  grid.innerHTML=posts.length?posts.map((p,i)=>'<article class="blog-card fade-in-up"><div class="blog-card-img">'+emojis[i%emojis.length]+'<span class="category-badge">'+esc(p.category||'General')+'</span></div><div class="blog-card-body"><h3>'+esc(p.title)+'</h3><p>'+esc(p.content)+'</p><div class="blog-card-meta"><span>'+esc(p.author?.name||'Writer')+'</span><span>'+new Date(p.createdAt).toLocaleDateString()+'</span></div></div></article>').join(''):'<p>No published blogs yet. Be the first to write one!</p>';
+ }catch(e){grid.innerHTML='<p>Unable to load blogs. Please try again later.</p>';showToast(e.message,'error');}
+}
+async function registerForm(){
+ const form=$('registerForm');if(!form)return;
+ form.addEventListener('submit',async e=>{
+  e.preventDefault();clearErrors(form);
+  const name=$('fullname').value.trim(),email=$('email').value.trim(),password=$('password').value,confirm=$('confirmPassword').value;
+  let valid=true;
+  if(name.length<2){fieldError($('fullname'),'Name must contain at least 2 characters');valid=false}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){fieldError($('email'),'Enter a valid email address');valid=false}
+  if(password.length<8){fieldError($('password'),'Password must be at least 8 characters');valid=false}
+  if(password!==confirm){fieldError($('confirmPassword'),'Passwords do not match');valid=false}
+  if(!$('terms').checked){showToast('Please accept the Terms & Conditions','error');valid=false}
+  if(!valid)return;
+  const button=form.querySelector('[type=submit]');button.disabled=true;button.textContent='Creating account…';
+  try{await api('/auth/register',{method:'POST',body:JSON.stringify({name,email,password})});showToast('Account created. Please log in.');setTimeout(()=>location.href='login.html',900)}
+  catch(err){showToast(err.message,'error')}
+  finally{button.disabled=false;button.textContent='Create Account'}
+ });
+}
+async function loginForm(){
+ const form=$('loginForm');if(!form)return;
+ form.addEventListener('submit',async e=>{
+  e.preventDefault();clearErrors(form);const email=$('email').value.trim(),password=$('password').value;
+  if(!email||!password){showToast('Enter your email and password','error');return}
+  const button=form.querySelector('[type=submit]');button.disabled=true;button.textContent='Logging in…';
+  try{await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})});showToast('Welcome back!');setTimeout(()=>location.href='dashboard.html',600)}
+  catch(err){showToast(err.message,'error')}
+  finally{button.disabled=false;button.textContent='Log In'}
+ });
+}
+async function dashboard(){
+ const table=$('postsTable');if(!table)return;
+ const user=await currentUser();if(!user){location.href='login.html';return}
+ $('welcomeMsg').textContent='Welcome back, '+user.name.split(' ')[0]+'! 👋';
+ $('sidebarUser').innerHTML='<div class="avatar-lg">'+esc(user.name[0].toUpperCase())+'</div><div class="user-info"><h4>'+esc(user.name)+'</h4><span>'+esc(user.email)+'</span></div>';
+ table.innerHTML='<tr><td colspan="5">Loading your posts…</td></tr>';
+ try{
+  const data=await api('/blogs');const posts=(Array.isArray(data)?data:data.blogs||[]).filter(p=>p.author?._id===user.id||p.author?._id===user._id);
+  $('totalPosts').textContent=posts.length;$('publishedPosts').textContent=posts.filter(p=>p.status!=='draft').length;$('draftPosts').textContent=posts.filter(p=>p.status==='draft').length;
+  $('totalViews').textContent='—';
+  table.innerHTML=posts.length?posts.map(p=>'<tr><td><strong>'+esc(p.title)+'</strong></td><td>'+esc(p.category||'General')+'</td><td><span class="status-badge '+(p.status==='draft'?'draft':'published')+'">'+(p.status==='draft'?'Draft':'Published')+'</span></td><td>'+new Date(p.createdAt).toLocaleDateString()+'</td><td><div class="action-btns"><a class="action-btn" title="Edit" href="create-blog.html?id='+encodeURIComponent(p._id)+'">✏️</a><button class="action-btn delete" data-delete="'+esc(p._id)+'" title="Delete">🗑️</button></div></td></tr>').join(''):'<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--gray)">No posts yet. <a href="create-blog.html">Create your first post!</a></td></tr>';
+  table.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Delete this blog post?'))return;try{await api('/blogs/'+b.dataset.delete,{method:'DELETE'});showToast('Blog deleted');dashboard()}catch(err){showToast(err.message,'error')}}));
+ }catch(err){table.innerHTML='<tr><td colspan="5">Unable to load posts: '+esc(err.message)+'</td></tr>'}
+}
+async function createBlog(){
+ const form=$('createBlogForm');if(!form)return;
+ const user=await currentUser();if(!user){location.href='login.html';return}
+ const params=new URLSearchParams(location.search),editId=params.get('id');let tags=[];
+ const tagInput=$('tagInput'),tagField=$('tagField');
+ function renderTags(){tagInput.querySelectorAll('.tag').forEach(n=>n.remove());tags.forEach((t,i)=>{const s=document.createElement('span');s.className='tag';s.textContent=t+' ';const b=document.createElement('button');b.type='button';b.textContent='×';b.onclick=()=>{tags.splice(i,1);renderTags()};s.appendChild(b);tagInput.insertBefore(s,tagField)})}
+ tagField?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();const v=tagField.value.trim().replace(',','');if(v&&!tags.includes(v)&&tags.length<5)tags.push(v);tagField.value='';renderTags()}});
+ const imageUpload=$('imageUpload'),cover=$('coverImage');imageUpload?.addEventListener('click',()=>cover.click());
+ cover?.addEventListener('change',()=>{const f=cover.files[0];if(f){if(f.size>2*1024*1024){showToast('Image must be under 2MB','error');cover.value='';return}imageUpload.textContent='Selected: '+f.name}});
+ if(editId){try{const p=await api('/blogs/'+editId);$('title').value=p.title;$('content').value=p.content;$('category').value=p.category||'';tags=p.tags||[];renderTags();form.querySelector('h2')?.replaceChildren('✏️ Edit Post')}catch(err){showToast(err.message,'error')}}
+ const save=async status=>{const title=$('title').value.trim(),content=$('content').value.trim();clearErrors(form);if(!title){fieldError($('title'),'Title is required');return}if(!content||content.length<30){fieldError($('content'),'Content must be at least 30 characters');return}
+ const payload={title,content,category:$('category').value,tags,status};
+ try{await api(editId?'/blogs/'+editId:'/blogs',{method:editId?'PUT':'POST',body:JSON.stringify(payload)});showToast(editId?'Blog updated':'Blog saved');setTimeout(()=>location.href='dashboard.html',700)}catch(err){showToast(err.message,'error')}};
+ form.addEventListener('submit',e=>{e.preventDefault();save('published')});
+ window.saveDraft=()=>save('draft');
+}
+document.addEventListener('DOMContentLoaded',async()=>{
+ initMobileNav();const user=await currentUser();await updateNav(user);
+ registerForm();loginForm();loadHome();dashboard();createBlog();
 });

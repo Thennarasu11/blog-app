@@ -1,0 +1,10 @@
+{
+  "name": "blogverse",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start:backend": "npm --prefix backend start",
+    "dev:backend": "npm --prefix backend run dev",
+    "install:all": "npm install && npm --prefix backend install"
+  }
+}
