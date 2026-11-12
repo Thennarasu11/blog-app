@@ -37,11 +37,28 @@ function initMobileNav(){
 }
 async function loadHome(){
  const grid=$('blogGrid');if(!grid)return;
+ const searchInput=$('blogSearch'),categorySelect=$('categoryFilter');
+ let allPosts=[];
+ const render=()=>{
+  const term=(searchInput?.value||'').trim().toLowerCase();
+  const category=categorySelect?.value||'';
+  const posts=allPosts.filter(p=>(!category||p.category===category)&&(!term||[p.title,p.content,p.category,...(p.tags||[]),p.author?.name].join(' ').toLowerCase().includes(term)));
+  const emojis=['📖','✨','💡','🔥','🎯','⚡'];
+  grid.innerHTML=posts.length?posts.map((p,i)=>'<article class="blog-card fade-in-up"><a class="blog-card-img" href="blog-details.html?id='+encodeURIComponent(p._id)+'" aria-label="Read '+esc(p.title)+'">'+emojis[i%emojis.length]+'<span class="category-badge">'+esc(p.category||'General')+'</span></a><div class="blog-card-body"><h3><a href="blog-details.html?id='+encodeURIComponent(p._id)+'">'+esc(p.title)+'</a></h3><p>'+esc(p.content)+'</p><div class="blog-card-meta"><span>'+esc(p.author?.name||'Writer')+'</span><span>'+new Date(p.createdAt).toLocaleDateString()+'</span></div><a class="btn btn-sm btn-secondary" href="blog-details.html?id='+encodeURIComponent(p._id)+'">Read full story →</a></div></article>').join(''):'<div class="blog-empty"><h3>No matching blogs found</h3><p>Try another search term or choose a different category.</p><button type="button" class="btn btn-sm btn-secondary" id="clearBlogFilters">Clear filters</button></div>';
+  $('clearBlogFilters')?.addEventListener('click',()=>{if(searchInput)searchInput.value='';if(categorySelect)categorySelect.value='';render()});
+ };
  grid.innerHTML='<p>Loading latest posts…</p>';
  try{
-  const data=await api('/blogs');const posts=Array.isArray(data)?data:(data.blogs||[]);
-  const emojis=['📖','✨','💡','🔥','🎯','⚡'];
-  grid.innerHTML=posts.length?posts.map((p,i)=>'<article class="blog-card fade-in-up"><a class="blog-card-img" href="blog-details.html?id='+encodeURIComponent(p._id)+'" aria-label="Read '+esc(p.title)+'">'+emojis[i%emojis.length]+'<span class="category-badge">'+esc(p.category||'General')+'</span></a><div class="blog-card-body"><h3><a href="blog-details.html?id='+encodeURIComponent(p._id)+'">'+esc(p.title)+'</a></h3><p>'+esc(p.content)+'</p><div class="blog-card-meta"><span>'+esc(p.author?.name||'Writer')+'</span><span>'+new Date(p.createdAt).toLocaleDateString()+'</span></div><a class="btn btn-sm btn-secondary" href="blog-details.html?id='+encodeURIComponent(p._id)+'">Read full story →</a></div></article>').join(''):'<p>No published blogs yet. Be the first to write one!</p>';
+  const data=await api('/blogs');allPosts=Array.isArray(data)?data:(data.blogs||[]);
+  if(categorySelect){
+   const current=categorySelect.value;
+   const categories=[...new Set(allPosts.map(p=>p.category||'General'))].sort((a,b)=>a.localeCompare(b));
+   categorySelect.innerHTML='<option value="">All categories</option>'+categories.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+   categorySelect.value=current;
+  }
+  searchInput?.addEventListener('input',render);
+  categorySelect?.addEventListener('change',render);
+  render();
  }catch(e){grid.innerHTML='<p>Unable to load blogs. Please try again later.</p>';showToast(e.message,'error');}
 }
 async function registerForm(){
@@ -96,7 +113,7 @@ async function createBlog(){
  tagField?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();const v=tagField.value.trim().replace(',','');if(v&&!tags.includes(v)&&tags.length<5)tags.push(v);tagField.value='';renderTags()}});
  const imageUpload=$('imageUpload'),cover=$('coverImage');imageUpload?.addEventListener('click',()=>cover.click());
  cover?.addEventListener('change',()=>{const f=cover.files[0];if(f){if(f.size>2*1024*1024){showToast('Image must be under 2MB','error');cover.value='';return}imageUpload.textContent='Selected: '+f.name}});
- if(editId){try{const p=await api('/blogs/mine/'+editId);$('title').value=p.title;$('content').value=p.content;$('category').value=p.category||'';tags=p.tags||[];renderTags();form.querySelector('h2')?.replaceChildren('✏️ Edit Post')}catch(err){showToast(err.message,'error')}}
+ if(editId){try{const p=await api('/blogs/mine/'+editId);$('title').value=p.title;$('content').value=p.content;$('category').value=p.category||'';tags=p.tags||[];renderTags();form.querySelector('h2')?.replaceChildren('✏️ Edit Post');document.title='Edit Blog - BlogVerse';const publish=form.querySelector('[type=submit]');if(publish)publish.textContent='💾 Update Post';const draft=form.querySelector('[onclick="saveDraft()"]');if(draft)draft.textContent='💾 Update as Draft';const actions=form.querySelector('.form-actions');if(actions&&!$('cancelEdit')){const cancel=document.createElement('a');cancel.id='cancelEdit';cancel.href='dashboard.html';cancel.className='btn btn-secondary';cancel.textContent='Cancel';actions.prepend(cancel)}}catch(err){showToast(err.message,'error');setTimeout(()=>location.href='dashboard.html',900)}}
  const save=async status=>{const title=$('title').value.trim(),content=$('content').value.trim();clearErrors(form);if(!title){fieldError($('title'),'Title is required');return}if(!content||content.length<30){fieldError($('content'),'Content must be at least 30 characters');return}
  const payload={title,content,category:$('category').value,tags,status};
  try{await api(editId?'/blogs/'+editId:'/blogs',{method:editId?'PUT':'POST',body:JSON.stringify(payload)});showToast(editId?'Blog updated':'Blog saved');setTimeout(()=>location.href='dashboard.html',700)}catch(err){showToast(err.message,'error')}};

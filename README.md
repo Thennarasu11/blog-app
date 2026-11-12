@@ -87,3 +87,25 @@ The application now uses MongoDB through Mongoose for persistent users and blog 
 - Verify `GET http://127.0.0.1:5000/api/health`, register an account, create a blog, confirm it appears on the homepage, and open its Read full story link.
 
 The repository contains the integration code and setup instructions; a successful live database test requires the developer's MongoDB connection and local runtime.
+
+
+## Module 04 — CRUD Operations (Day 13–Day 16)
+The BlogVerse application supports complete blog CRUD workflows:
+- **Create:** authenticated users publish a post or save it as a draft.
+- **Read:** public users browse published posts and open individual post details; signed-in authors can view all their own posts including drafts.
+- **Update:** authors can edit their own posts, change category/tags/content and publish or save as draft.
+- **Delete:** authors can delete their own posts after confirmation; the API enforces ownership.
+- **Search and filters:** the homepage supports keyword search across title, content and tags, plus category filtering. The API also accepts `GET /api/blogs?q=<term>&category=<category>` and returns published matches sorted newest first.
+
+### CRUD API reference
+| Method | Endpoint | Access | Operation |
+|---|---|---|---|
+| POST | `/api/blogs` | Signed in | Create |
+| GET | `/api/blogs` | Public | Read published posts; supports `q` and `category` |
+| GET | `/api/blogs/:id` | Public for published posts | Read one post |
+| GET | `/api/blogs/mine` | Signed in | Read own posts and drafts |
+| GET | `/api/blogs/mine/:id` | Signed in owner | Read own post for editing |
+| PUT | `/api/blogs/:id` | Author only | Update |
+| DELETE | `/api/blogs/:id` | Author only | Delete |
+
+The MongoDB API requires a configured `backend/.env` and running MongoDB service. Verify create, read, update and delete with an authenticated test account before submitting.

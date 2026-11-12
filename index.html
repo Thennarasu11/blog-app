@@ -83,6 +83,10 @@
         <h2>📝 Featured Posts</h2>
         <p>Discover the latest and most popular blog posts from our community</p>
       </div>
+      <div class="blog-filter-bar" role="search" aria-label="Search and filter blogs">
+        <label class="blog-search-field" for="blogSearch"><span aria-hidden="true">🔎</span><input id="blogSearch" type="search" placeholder="Search blog titles, content or tags..." autocomplete="off"></label>
+        <label class="blog-category-field" for="categoryFilter"><span>Category</span><select id="categoryFilter"><option value="">All categories</option></select></label>
+      </div>
       <div class="blog-grid" id="blogGrid">
         <!-- Populated by JS -->
       </div>
