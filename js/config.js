@@ -6,5 +6,5 @@
   const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   window.API_BASE_URL = isLocal
     ? 'http://127.0.0.1:5000/api'
-    : 'https://blogverse-api.onrender.com/api';
+    : 'https://blogverse-api-03s2.onrender.com/api';
 })();
