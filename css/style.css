@@ -1147,3 +1147,25 @@ h4 { font-size: 1.15rem; }
 .profile-logout{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:30px;padding-top:24px;border-top:1px solid var(--light-gray)}
 .profile-logout strong{display:block;margin-bottom:5px}
 @media(max-width:576px){.profile-wrapper{padding:28px 14px 50px}.profile-card{padding:22px 18px}.profile-heading{gap:14px}.profile-avatar{width:60px;height:60px;flex-basis:60px}.profile-heading h1{font-size:1.5rem}.profile-logout{align-items:flex-start;flex-direction:column}}
+
+
+/* ===== Module 06: Final responsive polish ===== */
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(108,92,231,.35);outline-offset:2px}
+img{max-width:100%;height:auto}
+.blog-card,.detail-card,.profile-card,.create-blog-card{min-width:0}
+.blog-card-body p,.detail-body,.dashboard-table td{overflow-wrap:anywhere}
+@media(max-width:768px){
+ .dashboard{display:block}
+ .sidebar{width:100%;position:relative;min-height:auto}
+ .sidebar-menu{display:flex;flex-wrap:wrap;gap:6px}
+ .sidebar-menu a{flex:1 1 135px}
+ .dashboard-main{padding:24px 16px}
+ .dashboard-table-wrapper{overflow-x:auto}
+ .dashboard-table{min-width:650px}
+ .stat-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){
+ .stat-cards{grid-template-columns:1fr}
+ .form-actions{flex-wrap:wrap}
+ .form-actions .btn{flex:1}
+}

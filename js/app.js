@@ -31,7 +31,8 @@ async function updateNav(user) {
     : '<a href="login.html" class="btn btn-sm btn-secondary">Log In</a><a href="register.html" class="btn btn-sm btn-primary">Sign Up</a>';
   $('logoutBtn')?.addEventListener('click',handleLogout);
 }
-async function handleLogout(){try{await api('/auth/logout',{method:'POST'});}catch(error){console.warn('Logout request failed:',error.message)}finally{location.replace('index.html')}}\nfunction initMobileNav(){
+async function handleLogout(){try{await api('/auth/logout',{method:'POST'});}catch(error){console.warn('Logout request failed:',error.message)}finally{location.replace('index.html')}}
+function initMobileNav(){
  const h=document.querySelector('.hamburger'),m=document.querySelector('.nav-menu');
  if(h&&m)h.addEventListener('click',()=>{m.classList.toggle('show');h.classList.toggle('active')});
 }
@@ -94,12 +95,12 @@ async function dashboard(){
  const table=$('postsTable');if(!table)return;
  const user=await currentUser();if(!user){location.href='login.html';return}
  $('welcomeMsg').textContent='Welcome back, '+user.name.split(' ')[0]+'! 👋';
- $('sidebarUser').innerHTML='<div class="avatar-lg">'+esc(user.name[0].toUpperCase())+'</div><div class="user-info"><h4>'+esc(user.name)+'</h4><span>'+esc(user.email)+'</span></div>';\n $('totalViews').textContent='—';
+ $('sidebarUser').innerHTML='<div class="avatar-lg">'+esc(user.name[0].toUpperCase())+'</div><div class="user-info"><h4>'+esc(user.name)+'</h4><span>'+esc(user.email)+'</span></div>';
+ $('totalViews').textContent='—';
  table.innerHTML='<tr><td colspan="5">Loading your posts…</td></tr>';
  try{
   const data=await api('/blogs/mine');const posts=Array.isArray(data)?data:(data.blogs||[]);
   $('totalPosts').textContent=posts.length;$('publishedPosts').textContent=posts.filter(p=>p.status!=='draft').length;$('draftPosts').textContent=posts.filter(p=>p.status==='draft').length;
-  $('totalViews').textContent='—';
   table.innerHTML=posts.length?posts.map(p=>'<tr><td><strong>'+esc(p.title)+'</strong></td><td>'+esc(p.category||'General')+'</td><td><span class="status-badge '+(p.status==='draft'?'draft':'published')+'">'+(p.status==='draft'?'Draft':'Published')+'</span></td><td>'+new Date(p.createdAt).toLocaleDateString()+'</td><td><div class="action-btns"><a class="action-btn" title="View" href="blog-details.html?id='+encodeURIComponent(p._id)+'">👁️</a><a class="action-btn" title="Edit" href="create-blog.html?id='+encodeURIComponent(p._id)+'">✏️</a><button class="action-btn delete" data-delete="'+esc(p._id)+'" title="Delete">🗑️</button></div></td></tr>').join(''):'<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--gray)">No posts yet. <a href="create-blog.html">Create your first post!</a></td></tr>';
   table.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Delete this blog post?'))return;try{await api('/blogs/'+b.dataset.delete,{method:'DELETE'});showToast('Blog deleted');dashboard()}catch(err){showToast(err.message,'error')}}));
  }catch(err){table.innerHTML='<tr><td colspan="5">Unable to load posts: '+esc(err.message)+'</td></tr>'}
@@ -141,7 +142,8 @@ async function profilePage(){
   finally{button.disabled=false;button.textContent='Save Changes'}
  });
 }
-\nasync function blogDetails(){
+
+async function blogDetails(){
  const root=$('blogDetails');if(!root)return;
  const id=new URLSearchParams(location.search).get('id');
  if(!id){root.innerHTML='<div class="create-blog-card"><h2>Blog not found</h2><p>No blog post was selected.</p><a class="btn btn-primary" href="index.html#featured">Back to blogs</a></div>';return}

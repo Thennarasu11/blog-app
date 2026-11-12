@@ -1,128 +1,177 @@
-# BlogVerse — Full-stack Blog Application
-Responsive blog publishing application with its existing HTML/CSS/vanilla JavaScript frontend and a Node.js, Express and MongoDB REST API.
+# BlogVerse — Full-Stack Blog Application
+
+BlogVerse is a responsive blog publishing application built with HTML, CSS and vanilla JavaScript, backed by a Node.js/Express REST API and MongoDB. It supports account registration, secure login, author-owned blog management, search, category filtering, profile management and individual blog reading pages.
 
 ## Features
-- Responsive home, registration, login, dashboard and blog editor pages.
-- MongoDB-backed users and blog posts.
-- Registration with bcrypt password hashing and duplicate-email protection.
-- JWT authentication in an HttpOnly cookie; protected author-only create, update and delete operations.
-- Public published-blog feed, private draft access for authors, validation and centralized API errors.
 
-## Stack
-HTML5, CSS3, vanilla JavaScript, Node.js, Express, MongoDB/Mongoose, JWT, bcrypt, Helmet, CORS and express-validator.
+- Responsive landing page, registration, login, dashboard, profile, editor and blog details pages.
+- MongoDB persistence through Mongoose.
+- Password hashing with bcrypt.
+- JWT authentication stored in an HttpOnly cookie.
+- Protected dashboard/editor/profile experiences and author-only blog mutations.
+- Create, read, update and delete blog posts, including drafts.
+- Search across blog title, content, category and tags; category filtering.
+- Centralized validation and error handling, Helmet security headers, CORS and API rate limiting.
+- Render Blueprint for deploying the frontend and API together.
 
-## Requirements
-Node.js 18+ and MongoDB (local or MongoDB Atlas).
+## Technology stack
 
-## Setup
-1. Clone and install:
-   ```bash
-   git clone https://github.com/Thennarasu11/blog-app.git
-   cd blog-app
-   npm install
-   cd backend && npm install
-   ```
-2. Configure backend:
-   ```bash
-   cp .env.example .env
-   ```
-   Set `MONGODB_URI`, a random `JWT_SECRET` (32+ characters), `FRONTEND_URL` and `COOKIE_SAME_SITE`. Never commit .env.
-3. Start API from `backend/`:
-   ```bash
-   npm run dev
-   ```
-4. Serve the repository root with a static server (for example VS Code Live Server at `http://127.0.0.1:5500`). Open `index.html`. Set `FRONTEND_URL` to that exact origin. The frontend API defaults to `http://localhost:5000/api`; override it before loading scripts with `window.API_BASE_URL` when deploying.
-
-## API
-All responses use JSON: `{ success, message?, data? }`.
-
-| Method | Endpoint | Access | Purpose |
-|---|---|---|---|
-| GET | /api/health | Public | Health check |
-| POST | /api/auth/register | Public | Register user |
-| POST | /api/auth/login | Public | Login; sets HttpOnly JWT cookie |
-| GET | /api/auth/me | Authenticated | Current user |
-| POST | /api/auth/logout | Public | Clear auth cookie |
-| GET | /api/blogs | Public | List published blogs newest first |
-| GET | /api/blogs/:id | Public (published) | Get blog by Mongo ID |
-| POST | /api/blogs | Authenticated | Create blog |
-| PUT | /api/blogs/:id | Author only | Update blog |
-| DELETE | /api/blogs/:id | Author only | Delete blog |
-
-Registration body: `{ "name": "Writer", "email": "writer@example.com", "password": "at-least-8-characters" }`.
-Login body: `{ "email": "writer@example.com", "password": "..." }`.
-Blog body: `{ "title": "...", "content": "At least 30 characters...", "category": "Technology", "tags": ["Node"], "status": "published" }`.
-
-## Authentication and security
-JWT is signed with `JWT_SECRET` and delivered only as an HttpOnly cookie. Frontend requests use `credentials: 'include'`; do not move the token into localStorage. HTTPS is required in production for secure cookies. Configure an exact trusted frontend origin. Helmet, rate limiting, request-size limits, validation, Mongoose schemas, bcrypt hashing and author ownership checks are enabled.
-
-## Testing
-Start MongoDB and the backend, then check `GET /api/health`. Test register/login/me, blog create/list/get/update/delete, invalid IDs and cross-user modification using Postman or curl. Automated backend tests can be added with a test database; live database and browser integration checks require your configured MongoDB URI and running frontend origin.
+- Frontend: HTML5, CSS3, vanilla JavaScript
+- Backend: Node.js 18+, Express.js
+- Database: MongoDB, Mongoose
+- Authentication: JWT, HttpOnly cookies, bcrypt
+- Security: Helmet, CORS, express-rate-limit, express-validator
+- Hosting: Render (Blueprint)
 
 ## Project structure
+
 ```
-backend/
-  config/db.js
-  controllers/{authController,blogController}.js
-  middleware/{asyncHandler,auth,errorHandler,validate}.js
-  models/{User,Blog}.js
-  routes/{authRoutes,blogRoutes}.js
-  server.js
-  .env.example
-  package.json
-css/style.css
-js/app.js
-index.html, login.html, register.html, dashboard.html, create-blog.html
+blog-app/
+├── backend/
+│   ├── config/db.js
+│   ├── controllers/authController.js
+│   ├── controllers/blogController.js
+│   ├── middleware/
+│   ├── models/User.js
+│   ├── models/Blog.js
+│   ├── routes/authRoutes.js
+│   ├── routes/blogRoutes.js
+│   ├── .env.example
+│   ├── package.json
+│   └── server.js
+├── css/style.css
+├── js/app.js
+├── js/config.js
+├── index.html
+├── login.html
+├── register.html
+├── dashboard.html
+├── profile.html
+├── create-blog.html
+├── blog-details.html
+├── render.yaml
+└── README.md
 ```
 
+## Run locally
 
-## Module 03 — Database Integration (Day 9–Day 12)
-The application now uses MongoDB through Mongoose for persistent users and blog posts. User passwords are hashed with bcrypt before storage. Authentication uses JWT in an HttpOnly cookie. The homepage retrieves published blog posts from `GET /api/blogs`; the authenticated dashboard retrieves the current user's posts from `GET /api/blogs/mine`. Selecting a post opens `blog-details.html?id=<MongoDB ObjectId>`, which retrieves that individual post from `GET /api/blogs/:id` and displays its title, category, author, date, tags and full content.
+### Prerequisites
 
-### Database setup
-- Start MongoDB locally or create a MongoDB Atlas database.
-- Copy `backend/.env.example` to `backend/.env` and set `MONGODB_URI` and a strong `JWT_SECRET`.
-- Run `npm install` inside `backend/`, then `npm run dev`.
-- Serve the frontend root with Live Server at the configured `FRONTEND_URL`.
-- Verify `GET http://127.0.0.1:5000/api/health`, register an account, create a blog, confirm it appears on the homepage, and open its Read full story link.
+- Node.js 18 or later and npm
+- MongoDB Community Server locally, or a MongoDB Atlas cluster
+- A static frontend server such as VS Code Live Server
 
-The repository contains the integration code and setup instructions; a successful live database test requires the developer's MongoDB connection and local runtime.
+### 1. Clone the repository
 
+```bash
+git clone https://github.com/Thennarasu11/blog-app.git
+cd blog-app
+```
 
-## Module 04 — CRUD Operations (Day 13–Day 16)
-The BlogVerse application supports complete blog CRUD workflows:
-- **Create:** authenticated users publish a post or save it as a draft.
-- **Read:** public users browse published posts and open individual post details; signed-in authors can view all their own posts including drafts.
-- **Update:** authors can edit their own posts, change category/tags/content and publish or save as draft.
-- **Delete:** authors can delete their own posts after confirmation; the API enforces ownership.
-- **Search and filters:** the homepage supports keyword search across title, content and tags, plus category filtering. The API also accepts `GET /api/blogs?q=<term>&category=<category>` and returns published matches sorted newest first.
+### 2. Configure the backend
 
-### CRUD API reference
-| Method | Endpoint | Access | Operation |
+```bash
+cd backend
+npm install
+```
+
+Copy `.env.example` to `.env` inside the `backend` folder and set:
+
+```env
+NODE_ENV=development
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/blogverse
+JWT_SECRET=replace_with_a_long_random_secret_at_least_32_characters
+JWT_EXPIRES_IN=1d
+FRONTEND_URL=http://127.0.0.1:5500
+COOKIE_SAME_SITE=lax
+```
+
+For MongoDB Atlas, use the connection URI provided by your Atlas cluster. Never commit `.env` or credentials.
+
+### 3. Start the API
+
+From the `backend` folder:
+
+```bash
+npm run dev
+```
+
+The API runs at `http://127.0.0.1:5000`. Check `http://127.0.0.1:5000/api/health`; a healthy response reports `database: "connected"`.
+
+### 4. Start the frontend
+
+Serve the repository root using VS Code Live Server or another static server. Open `http://127.0.0.1:5500`. The `js/config.js` file selects the local API automatically for localhost/127.0.0.1.
+
+If your local static server uses a different port, update `FRONTEND_URL` in `backend/.env` to the exact origin.
+
+## Deployment to Render
+
+The repository includes `render.yaml`, which defines two Render services: a static frontend (`blogverse-frontend`) and a Node web service (`blogverse-api`).
+
+1. Push the repository to GitHub.
+2. Sign in to Render and choose **New → Blueprint**.
+3. Connect `Thennarasu11/blog-app` and select the `main` branch.
+4. Review the two services in `render.yaml` and deploy the Blueprint.
+5. When prompted, provide the `MONGODB_URI` value for the API service. Use a MongoDB Atlas database and allow network access from Render (Atlas network access configuration).
+6. Render generates `JWT_SECRET` automatically. Keep it private.
+7. The frontend config points to `https://blogverse-api.onrender.com/api` and the CORS origin is configured for `https://blogverse-frontend.onrender.com`. If Render assigns different service URLs, update `js/config.js` and the API service's `FRONTEND_URL` to the actual URLs, commit and redeploy.
+8. Confirm the API health endpoint reports a connected database, then test registration, login, blog CRUD, profile update and logout on the live frontend.
+
+Render may take a short time to wake a free service after inactivity. Do not publish a deployment URL as live until both services have finished deploying and the health check succeeds.
+
+## API reference
+
+All API responses are JSON in the shape `{ success, message?, data? }`.
+
+### Health and authentication
+
+| Method | Endpoint | Access | Description |
 |---|---|---|---|
-| POST | `/api/blogs` | Signed in | Create |
-| GET | `/api/blogs` | Public | Read published posts; supports `q` and `category` |
-| GET | `/api/blogs/:id` | Public for published posts | Read one post |
-| GET | `/api/blogs/mine` | Signed in | Read own posts and drafts |
-| GET | `/api/blogs/mine/:id` | Signed in owner | Read own post for editing |
-| PUT | `/api/blogs/:id` | Author only | Update |
-| DELETE | `/api/blogs/:id` | Author only | Delete |
-
-The MongoDB API requires a configured `backend/.env` and running MongoDB service. Verify create, read, update and delete with an authenticated test account before submitting.
-
-
-## Module 05 — Authentication & Dashboard (Day 17–Day 20)
-- JWT authentication is issued in an HttpOnly cookie on login and checked by the `protect` middleware for private API routes.
-- The dashboard and blog editor check `GET /api/auth/me` before rendering private content and redirect unauthenticated visitors to the login page.
-- The dashboard loads only the current user's posts from `GET /api/blogs/mine`; server-side author ownership checks also protect edit and delete operations.
-- The new `profile.html` page displays the signed-in user's name, email and account creation month, and allows the user to update their name and email through `PUT /api/auth/me`.
-- Logout is available from the navigation, dashboard sidebar and profile page. It calls `POST /api/auth/logout` to clear the HttpOnly cookie.
-
-### Profile API
-| Method | Endpoint | Access | Purpose |
-|---|---|---|---|
+| GET | `/api/health` | Public | API and database health |
+| POST | `/api/auth/register` | Public | Create an account |
+| POST | `/api/auth/login` | Public | Login and set HttpOnly JWT cookie |
 | GET | `/api/auth/me` | Authenticated | Read current profile |
-| PUT | `/api/auth/me` | Authenticated | Update name and email |
-| POST | `/api/auth/logout` | Authenticated session | Clear login cookie |
+| PUT | `/api/auth/me` | Authenticated | Update profile name/email |
+| POST | `/api/auth/logout` | Session | Clear authentication cookie |
 
-Private dashboard data is never read from browser localStorage. The frontend relies on the server-validated session cookie and backend author filtering.
+### Blogs
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/blogs` | Public | List published blogs, newest first |
+| GET | `/api/blogs?q=term&category=Technology` | Public | Search/filter published blogs |
+| GET | `/api/blogs/:id` | Public for published posts | Read a blog |
+| GET | `/api/blogs/mine` | Authenticated | List own posts and drafts |
+| GET | `/api/blogs/mine/:id` | Authenticated owner | Read own post for editing |
+| POST | `/api/blogs` | Authenticated | Create a blog |
+| PUT | `/api/blogs/:id` | Author only | Update a blog |
+| DELETE | `/api/blogs/:id` | Author only | Delete a blog |
+
+Registration JSON: `{ "name": "Writer", "email": "writer@example.com", "password": "at-least-8-characters" }`.
+
+Blog JSON: `{ "title": "A blog title", "content": "At least 30 characters of blog content...", "category": "Technology", "tags": ["Node"], "status": "published" }`.
+
+## Security notes
+
+- Passwords are hashed with bcrypt and are never returned by API responses.
+- JWTs are held in HttpOnly cookies; frontend code does not store them in localStorage.
+- Protected API routes verify JWTs and load the user from MongoDB.
+- Blog update/delete endpoints enforce author ownership on the server.
+- Configure an exact CORS origin and use HTTPS in production.
+- Keep `backend/.env`, database credentials and JWT secrets out of Git.
+
+## Verification checklist
+
+After configuring MongoDB and running both services, verify:
+
+1. Register a new user; confirm a duplicate email is rejected.
+2. Login; confirm `GET /api/auth/me` succeeds.
+3. Open the dashboard in a logged-out browser; it should redirect to login.
+4. Create, edit, publish, draft and delete a blog as its author.
+5. Confirm a second user cannot edit/delete the first user's post.
+6. Verify homepage search, category filtering and the blog details page.
+7. Update the profile and verify the changed name appears in the dashboard.
+8. Logout and confirm protected pages redirect to login.
+
+Automated and live integration tests require a configured MongoDB instance and deployed/local runtime; do not treat a successful Git push as proof that the hosted app is running.
