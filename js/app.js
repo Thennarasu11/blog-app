@@ -1,5 +1,5 @@
 /* BlogVerse frontend API integration */
-const API_BASE = window.API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = window.API_BASE_URL || 'http://127.0.0.1:5000/api';
 const api = async (path, options={}) => {
   const response = await fetch(API_BASE + path, {
     ...options, credentials: 'include',
