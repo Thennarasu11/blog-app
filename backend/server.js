@@ -1,9 +1,9 @@
 require('dotenv').config();
-const express=require('express');const cors=require('cors');const helmet=require('helmet');const rateLimit=require('express-rate-limit');
+const express=require('express');const cors=require('cors');const helmet=require('helmet');const rateLimit=require('express-rate-limit');const cookieParser=require('cookie-parser');
 const connectDB=require('./config/db');const authRoutes=require('./routes/authRoutes');const blogRoutes=require('./routes/blogRoutes');const {notFound,errorHandler}=require('./middleware/errorHandler');
 const app=express();
 app.disable('x-powered-by');app.use(helmet());app.use(cors({origin:process.env.FRONTEND_URL||'http://127.0.0.1:5500',credentials:true}));
-app.use(express.json({limit:'20kb'}));app.use(express.urlencoded({extended:false,limit:'20kb'}));
+app.use(cookieParser());app.use(express.json({limit:'20kb'}));app.use(express.urlencoded({extended:false,limit:'20kb'}));
 app.use('/api',rateLimit({windowMs:15*60*1000,max:200,standardHeaders:true,legacyHeaders:false}));
 app.get('/api/health',(req,res)=>res.json({success:true,message:'BlogVerse API is running'}));
 app.use('/api/auth',authRoutes);app.use('/api/blogs',blogRoutes);app.use(notFound);app.use(errorHandler);
